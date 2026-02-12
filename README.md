@@ -54,4 +54,8 @@ To access the admin dashboard, login with the following credentials:
 
 ---
 Created for Advanced Web Technologies Assignment.
+<<<<<<< HEAD
 "# E-commerce-Website" 
+=======
+"# E-commerce-Website" 
+>>>>>>> 6fd87426f4cbf8542fd2aa396707697ab47225a2
