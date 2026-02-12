@@ -24,6 +24,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AddProduct from './admin/AddProduct';
 import EditProduct from './admin/EditProduct';
 import ManageCarousel from './admin/ManageCarousel';
+import Checkout from './pages/Checkout';
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -45,6 +46,7 @@ const AnimatedRoutes = () => {
         <Route path="/products" element={<Products />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/auth" element={<Auth />} />
 
 

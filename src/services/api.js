@@ -1,4 +1,6 @@
 
+import { supabase, isSupabaseConfigured } from './supabaseClient';
+
 const MOCK_PRODUCTS = [
     {
         id: 1,
@@ -93,14 +95,15 @@ const STORAGE_KEYS = {
     users: 'meteor_users_v3',
 };
 
-// Initialize data if not present
+// Initialize data if not present (only relevant for localStorage fallback)
 const initializeData = () => {
-    // Always overwrite for this session to ensure images are fixed for the user
-    if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(MOCK_PRODUCTS));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.SLIDES)) {
-        localStorage.setItem(STORAGE_KEYS.SLIDES, JSON.stringify(MOCK_SLIDES));
+    if (!isSupabaseConfigured) {
+        if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(MOCK_PRODUCTS));
+        }
+        if (!localStorage.getItem(STORAGE_KEYS.SLIDES)) {
+            localStorage.setItem(STORAGE_KEYS.SLIDES, JSON.stringify(MOCK_SLIDES));
+        }
     }
 };
 
@@ -108,18 +111,43 @@ initializeData();
 
 export const productService = {
     getAll: async () => {
-        // Simulate API delay
+        if (isSupabaseConfigured) {
+            const { data, error } = await supabase.from('products').select('*').order('id');
+            if (error) {
+                console.error('Error fetching products:', error);
+                throw error;
+            }
+            return data;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         return JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS) || '[]');
     },
 
     getById: async (id) => {
+        if (isSupabaseConfigured) {
+            const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+            if (error) throw error;
+            return data;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 300));
         const products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS) || '[]');
         return products.find(p => p.id === Number(id));
     },
 
     create: async (product) => {
+        if (isSupabaseConfigured) {
+            // Remove ID if present to let DB generate it, or handle correctly
+            const { id, ...productData } = product;
+            const { data, error } = await supabase.from('products').insert([productData]).select().single();
+            if (error) throw error;
+            return data;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         const products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS) || '[]');
         const newProduct = { ...product, id: Date.now() };
@@ -129,6 +157,13 @@ export const productService = {
     },
 
     update: async (id, updates) => {
+        if (isSupabaseConfigured) {
+            const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
+            if (error) throw error;
+            return data;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         const products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS) || '[]');
         const index = products.findIndex(p => p.id === Number(id));
@@ -141,6 +176,13 @@ export const productService = {
     },
 
     delete: async (id) => {
+        if (isSupabaseConfigured) {
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) throw error;
+            return true;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         const products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS) || '[]');
         const filtered = products.filter(p => p.id !== Number(id));
@@ -151,11 +193,29 @@ export const productService = {
 
 export const carouselService = {
     getAll: async () => {
+        if (isSupabaseConfigured) {
+            const { data, error } = await supabase.from('slides').select('*').order('id');
+            if (error) {
+                console.error('Error fetching slides:', error);
+                throw error;
+            }
+            return data;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         return JSON.parse(localStorage.getItem(STORAGE_KEYS.SLIDES) || '[]');
     },
 
     create: async (slide) => {
+        if (isSupabaseConfigured) {
+            const { id, ...slideData } = slide;
+            const { data, error } = await supabase.from('slides').insert([slideData]).select().single();
+            if (error) throw error;
+            return data;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         const slides = JSON.parse(localStorage.getItem(STORAGE_KEYS.SLIDES) || '[]');
         const newSlide = { ...slide, id: Date.now() };
@@ -165,6 +225,13 @@ export const carouselService = {
     },
 
     delete: async (id) => {
+        if (isSupabaseConfigured) {
+            const { error } = await supabase.from('slides').delete().eq('id', id);
+            if (error) throw error;
+            return true;
+        }
+
+        // Fallback
         await new Promise(resolve => setTimeout(resolve, 500));
         const slides = JSON.parse(localStorage.getItem(STORAGE_KEYS.SLIDES) || '[]');
         const filtered = slides.filter(s => s.id !== Number(id));
@@ -173,7 +240,7 @@ export const carouselService = {
     }
 };
 
-// Auth Simulation
+// Auth Simulation (remains local for simplicity unless requested otherwise)
 export const authService = {
     login: async (email, password) => {
         await new Promise(resolve => setTimeout(resolve, 800));

@@ -118,9 +118,9 @@ const Cart = () => {
                             </div>
                         </div>
 
-                        <button className="w-full py-4 bg-royalBlue-900 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300">
+                        <Link to="/checkout" className="w-full py-4 bg-royalBlue-900 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 block text-center">
                             Proceed to Checkout
-                        </button>
+                        </Link>
 
                         <p className="text-xs text-gray-400 text-center mt-4 flex items-center justify-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500"></span> Secure Checkout
